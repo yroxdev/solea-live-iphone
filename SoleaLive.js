@@ -29,9 +29,9 @@ async function choose(data){
    matches=names.filter(x=>normalize(x).includes(query)).slice(0,80);
   }else matches=(prefs.favorites||[]).filter(x=>names.includes(x));
   if(!matches.length){const a=new Alert();a.title="Aucun arrêt trouvé";a.addAction("OK");await a.presentAlert();continue;}
-  const a=new Alert();a.title="Choisir un arrêt";a.message=matches.length===80?"80 premiers résultats":matches.length+" résultat(s)";
-  matches.forEach(x=>a.addAction(x));a.addCancelAction("Retour");
-  const i=await a.presentSheet();if(i<0)continue;
+  const picker=new Alert();picker.title="Choisir un arrêt";picker.message=matches.length===80?"80 premiers résultats":matches.length+" résultat(s)";
+  matches.forEach(x=>picker.addAction(x));picker.addCancelAction("Retour");
+  const i=await picker.presentSheet();if(i<0)continue;
   prefs.stop=matches[i];prefs.favorites=[prefs.stop,...(prefs.favorites||[]).filter(x=>x!==prefs.stop)].slice(0,12);
   save();const ok=new Alert();ok.title="Arrêt enregistré";ok.message=prefs.stop+" sera affiché sur le widget.";ok.addAction("OK");await ok.presentAlert();
   searching=false;

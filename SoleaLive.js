@@ -16,9 +16,9 @@ async function choose(data){
  const names=[...new Set(Object.values(data.stops||{}))].sort((a,b)=>a.localeCompare(b,"fr"));
  let searching=true;
  while(searching){
-  const a=new Alert();a.title="Soléa Live";a.message="Arrêt actuel : "+prefs.stop;
-  a.addAction("🔎 Rechercher un arrêt");a.addAction("⭐ Mes favoris");a.addAction("Terminer");
-  const choice=await a.presentSheet();
+  const menu=new Alert();menu.title="Soléa Live";menu.message="Arrêt actuel : "+prefs.stop;
+  menu.addAction("🔎 Rechercher un arrêt");menu.addAction("⭐ Mes favoris");menu.addAction("Terminer");
+  const choice=await menu.presentSheet();
   if(choice===2||choice<0)break;
   let matches=[];
   if(choice===0){
@@ -28,7 +28,7 @@ async function choose(data){
    const query=normalize(q.textFieldValue(0).trim());
    matches=names.filter(x=>normalize(x).includes(query)).slice(0,80);
   }else matches=(prefs.favorites||[]).filter(x=>names.includes(x));
-  if(!matches.length){const a=new Alert();a.title="Aucun arrêt trouvé";a.addAction("OK");await a.presentAlert();continue;}
+  if(!matches.length){const emptyAlert=new Alert();emptyAlert.title="Aucun arrêt trouvé";emptyAlert.addAction("OK");await emptyAlert.presentAlert();continue;}
   const picker=new Alert();picker.title="Choisir un arrêt";picker.message=matches.length===80?"80 premiers résultats":matches.length+" résultat(s)";
   matches.forEach(x=>picker.addAction(x));picker.addCancelAction("Retour");
   const i=await picker.presentSheet();if(i<0)continue;

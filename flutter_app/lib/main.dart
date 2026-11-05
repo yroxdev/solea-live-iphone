@@ -149,6 +149,15 @@ class _HomePageState extends State<HomePage> {
         if (loading) const LinearProgressIndicator(),
         if (error != null) Padding(padding: const EdgeInsets.all(12), child: Text('Connexion : $error', style: const TextStyle(color: Colors.orangeAccent))),
         if (stale) const Padding(padding: EdgeInsets.all(12), child: Text('Attention : données anciennes ou indisponibles', style: TextStyle(color: Colors.orangeAccent))),
+        if (feed?['alerts'] is List && (feed!['alerts'] as List).isNotEmpty)
+          ...((feed!['alerts'] as List).take(3)).map((item) {
+            final alert = item as Map<String,dynamic>;
+            return Card(color: const Color(0xff572332), child: ListTile(
+              leading: const Icon(Icons.warning_amber_rounded, color: Colors.orangeAccent),
+              title: Text((alert['title'] ?? 'Perturbation réseau').toString()),
+              subtitle: Text((alert['description'] ?? '').toString(), maxLines: 4, overflow: TextOverflow.ellipsis),
+            ));
+          }),
         const SizedBox(height: 12),
         Text('Prochains passages', style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 8),

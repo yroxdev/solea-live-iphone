@@ -42,6 +42,11 @@ async function widget(data){
  const stop=args.widgetParameter?.trim()||prefs.stop;
  const w=new ListWidget();w.backgroundColor=new Color("#111827");w.setPadding(15,15,15,15);
  add(w,"● SOLÉA LIVE",16,"#FFFFFF",true);w.addSpacer(5);add(w,stop,12,"#AAB6C8");w.addSpacer(12);
+ const alerts=Array.isArray(data.alerts)?data.alerts:[];
+ if(alerts.length){
+  const active=alerts.filter(a=>!a.routes?.length||a.routes.some(r=>["1","2","3","TT","Tram-Train"].includes(r)));
+  if(active.length){const warning=add(w,"⚠ "+(active[0].title||"Perturbation réseau"),11,"#FF7C88",true);warning.lineLimit=2;w.addSpacer(6);}
+ }
  const ids=Object.keys(data.stops||{}).filter(id=>normalize(data.stops[id])===normalize(stop));
  const matches=ids.length?ids:Object.keys(data.stops||{}).filter(id=>normalize(data.stops[id]).includes(normalize(stop)));
  let a=matches.flatMap(id=>data.departures[id]||[]).filter(d=>Date.parse(d.departure)>Date.now()-60000);

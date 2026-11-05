@@ -7,7 +7,7 @@ let prefs={stop:"Porte Jeune",favorites:["Porte Jeune"]};
 try{if(fm.fileExists(preference))prefs={...prefs,...JSON.parse(fm.readString(preference))};}catch(e){}
 const save=()=>fm.writeString(preference,JSON.stringify(prefs));
 async function load(){
- const req=new Request(URL);req.timeoutInterval=20;
+ const req=new Request(URL + "?refresh=" + Date.now());req.timeoutInterval=20;
  const raw=await req.loadString();
  if(req.response.statusCode!==200)throw Error("HTTP "+req.response.statusCode);
  return JSON.parse(raw);

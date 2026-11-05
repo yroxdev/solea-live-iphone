@@ -72,7 +72,7 @@ def main():
             day=(now+timedelta(days=offset)).date()
             midnight=datetime(day.year,day.month,day.day,tzinfo=TZ)
             scheduled=midnight+timedelta(seconds=seconds(st["departure_time"]))
-            if not now-timedelta(minutes=2)<=scheduled<=now+timedelta(hours=4): continue
+            if not now-timedelta(minutes=2)<=scheduled<=now+timedelta(hours=24): continue
             update=updates.get((st["trip_id"],st["stop_sequence"],st["stop_id"])) or updates.get((st["trip_id"],st["stop_sequence"],""))
             actual=scheduled
             realtime=False
@@ -89,7 +89,7 @@ def main():
                 "scheduled":scheduled.isoformat(),
                 "departure":actual.isoformat(),
                 "realtime":realtime})
-    departures={sid:sorted(items,key=lambda x:x["departure"])[:30] for sid,items in bystop.items()}
+    departures={sid:sorted(items,key=lambda x:x["departure"])[:120] for sid,items in bystop.items()}
     os.makedirs(os.path.join(ROOT,"public"),exist_ok=True)
     with open(os.path.join(ROOT,"public","departures.json"),"w",encoding="utf-8") as f:
         json.dump({"updated":now.isoformat(),"realtime_feed":status,"stops":stop_names,"departures":departures},f,ensure_ascii=False,separators=(",",":"))

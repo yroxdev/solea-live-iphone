@@ -89,10 +89,36 @@ def main():
                 "scheduled":scheduled.isoformat(),
                 "departure":actual.isoformat(),
                 "realtime":realtime})
+    alerts=[]
+    alerts_status="not_configured"
+    alerts_url=os.environ.get("SOLEA_ALERTS_URL","").strip()
+    if alerts_url:
+        try:
+            req=urllib.request.Request(alerts_url,headers={"User-Agent":"SoleaLive/1.0"})
+            with urllib.request.urlopen(req,timeout=25) as response:
+                alert_raw=response.read()
+            alert_feed=gtfs_realtime_pb2.FeedMessage()
+            alert_feed.ParseFromString(alert_raw)
+            for entity in alert_feed.entity:
+                if not entity.HasField("alert"): continue
+                a=entity.alert
+                active=True
+                if a.active_period:
+                    active=any((not p.HasField("start") or int(p.start)<=int(now.timestamp())) and (not p.HasField("end") or int(p.end)>=int(now.timestamp())) for p in a.active_period)
+                if not active: continue
+                def translation(msg):
+                    if not msg.translation: return ""
+                    return next((x.text for x in msg.translation if x.language.lower().startswith("fr")),msg.translation[0].text)
+                routes_affected=sorted({routes.get(s.route_id,{}).get("route_short_name",s.route_id) for s in a.informed_entity if s.route_id})
+                alerts.append({"id":entity.id,"title":translation(a.header_text),"description":translation(a.description_text),"routes":routes_affected,"url":translation(a.url)})
+            alerts_status="available"
+        except Exception as e:
+            print("GTFS-RT alerts unavailable:",repr(e))
+            alerts_status="unavailable"
     departures={sid:sorted(items,key=lambda x:x["departure"])[:120] for sid,items in bystop.items()}
     os.makedirs(os.path.join(ROOT,"public"),exist_ok=True)
     with open(os.path.join(ROOT,"public","departures.json"),"w",encoding="utf-8") as f:
-        json.dump({"updated":now.isoformat(),"realtime_feed":status,"stops":stop_names,"departures":departures},f,ensure_ascii=False,separators=(",",":"))
+        json.dump({"updated":now.isoformat(),"realtime_feed":status,"stops":stop_names,"departures":departures,"alerts":alerts,"alerts_status":alerts_status},f,ensure_ascii=False,separators=(",",":"))
     print("Stops with departures:",len(departures),"RT:",status)
 
 if __name__=="__main__":main()
